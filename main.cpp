@@ -5,14 +5,38 @@
 #include <conio.h>
 using namespace std;
 
-int width, height, X, Y, score;
+int width, height, score, ntail;
 char dir;
 
-struct Fruit
+struct StructOfCoordinates
 {
  int X;
  int Y;
-} fruit;
+} fruit, player, tail[100];
+
+void hideCursor();
+void setup();
+void fruitSpawn();
+void draw();
+void control();
+void logic(bool *game);
+
+int main()
+{
+ bool game = true;
+ ShowCursor(false);
+ setup();
+ while (game)
+ {
+  draw();
+  cout << endl;
+  control();
+  logic(&game);
+  Sleep(80);
+ }
+ cout << "Game Over" << endl;
+ return 0;
+}
 
 void hideCursor()
 {
@@ -27,13 +51,18 @@ void setup()
 {
  width = 50;
  height = 10;
- X = (width - 2) / 2;
- Y = (height - 2) / 2;
- fruit.X = rand() % width;
- fruit.Y = rand() % height;
+ player.X = (width - 2) / 2;
+ player.Y = (height - 2) / 2;
+ fruitSpawn();
  score = 0;
  // hideCursor();
 }
+void fruitSpawn()
+{
+ fruit.X = rand() % width;
+ fruit.Y = rand() % height;
+}
+
 void draw()
 {
  system("cls");
@@ -52,7 +81,7 @@ void draw()
     cout << "*";
    }
 
-   if (i == Y && j == X)
+   if (i == player.Y && j == player.X)
    {
     cout << "O";
    }
@@ -62,7 +91,19 @@ void draw()
    }
    else
    {
-    cout << " ";
+    bool space = true;
+    for (int k = 0; k < ntail; k++)
+    {
+     if (i == tail[k].Y && j == tail[k].X)
+     {
+      cout << "o";
+      space = false;
+     }
+    }
+    if (space)
+    {
+     cout << " ";
+    }
    }
 
    if (j == width - 1)
@@ -121,38 +162,50 @@ void control()
   dir = 'd';
  }
 }
-void movement()
+void logic(bool *game)
 {
+ int prevX = tail[0].X;
+ int prevY = tail[0].Y;
+ int tmpX, tmpY;
+ tail[0].X = player.X;
+ tail[0].Y = player.Y;
+ for (int i = 1; i < ntail; i++)
+ {
+  tmpX = tail[i].X;
+  tmpY = tail[i].Y;
+  tail[i].X = prevX;
+  tail[i].Y = prevY;
+  prevX = tmpX;
+  prevY = tmpY;
+  cout << tail[i].X << " " << prevX << endl;
+ }
  switch (dir)
  {
  case 'w':
-  Y--;
+  player.Y--;
   break;
  case 's':
-  Y++;
+  player.Y++;
   break;
  case 'a':
-  X--;
+  player.X--;
   break;
  case 'd':
-  X++;
+  player.X++;
   break;
  default:
   break;
  }
-}
 
-int main()
-{
- ShowCursor(false);
- setup();
- while (true)
+ if ((player.X > width || player.X < 0) || (player.Y > height || player.Y < 0))
  {
-  draw();
-  cout << endl;
-  control();
-  movement();
-  Sleep(80);
+  *game = false;
  }
- return 0;
+
+ if (player.X == fruit.X && player.Y == fruit.Y)
+ {
+  score += 10;
+  fruitSpawn();
+  ntail++;
+ }
 }
