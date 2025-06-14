@@ -8,12 +8,17 @@ using namespace std;
 int width, height, score, ntail;
 char dir;
 
+HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+COORD cursorPosition;
+
 struct StructOfCoordinates
 {
  int X;
  int Y;
 } fruit, player, tail[100];
 
+COORD getCursorPosition();
+void setPositionCursor(int x, int y);
 void hideCursor();
 void setup();
 void fruitSpawn();
@@ -23,24 +28,69 @@ void logic(bool *game);
 
 int main()
 {
+menu:
  bool game = true;
- ShowCursor(false);
- setup();
- while (game)
+ char choose;
+ cout << "=============================" << endl;
+ cout << "||       Snake Game        ||" << endl;
+ cout << "=============================" << endl;
+
+ cout << "\n1. Play Game" << endl;
+ cout << "2. Score" << endl;
+ cout << "3. Exit" << endl;
+
+ cout << "\nYour choose [1..3] : ";
+ cin >> choose;
+
+ switch (choose)
  {
-  draw();
-  cout << endl;
-  control();
-  logic(&game);
-  Sleep(80);
+ case '1':
+  ShowCursor(false);
+  setup();
+
+  while (game)
+  {
+   draw();
+   cout << endl;
+   control();
+   logic(&game);
+   Sleep(80);
+  }
+  cout << "Game Over" << endl;
+  system("pause");
+  goto menu;
+  break;
+ case '2':
+  cout << "Score menu!" << endl;
+  system("pause");
+  goto menu;
+  break;
+ case '3':
+  break;
+ default:
+  cout << "Pilihan tidak tersedia!" << endl;
+  system("pause");
+  goto menu;
+  break;
  }
- cout << "Game Over" << endl;
  return 0;
 }
 
+COORD getCursorPosition()
+{
+ CONSOLE_SCREEN_BUFFER_INFO csbi;
+ GetConsoleScreenBufferInfo(consoleHandle, &csbi);
+ return csbi.dwCursorPosition;
+};
+void setPositionCursor(int x, int y)
+{
+ cursorPosition.X = x;
+ cursorPosition.Y = y;
+
+ SetConsoleCursorPosition(consoleHandle, cursorPosition);
+}
 void hideCursor()
 {
- HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
  CONSOLE_CURSOR_INFO cursorInfo;
  GetConsoleCursorInfo(consoleHandle, &cursorInfo);
  cursorInfo.bVisible = false;
@@ -70,6 +120,7 @@ void draw()
  {
   cout << "*";
  }
+ cout << " Score : " << score;
  cout << endl;
 
  for (int i = 0; i < height; i++)
@@ -118,7 +169,6 @@ void draw()
   cout << "*";
  }
  cout << endl;
- cout << "Score: " << score;
 }
 
 void control()
@@ -177,7 +227,7 @@ void logic(bool *game)
   tail[i].Y = prevY;
   prevX = tmpX;
   prevY = tmpY;
-  cout << tail[i].X << " " << prevX << endl;
+  // cout << "Tail now : " << tail[i].X << " " << "Tail prev : " << prevX << " Tail tmp : " << tmpX << endl;
  }
  switch (dir)
  {
