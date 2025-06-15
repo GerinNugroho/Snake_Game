@@ -3,6 +3,7 @@
 #include <windows.h>
 #include <unistd.h>
 #include <conio.h>
+#include <fstream>
 using namespace std;
 
 int width, height, score;
@@ -29,6 +30,37 @@ void hideCursor()
  GetConsoleCursorInfo(consoleHandle, &cursorInfo);
  cursorInfo.bVisible = false;
  SetConsoleCursorInfo(consoleHandle, &cursorInfo);
+}
+
+void saveScore(int score)
+{
+ ofstream file("score.txt", ios::app); // simpan ke file (append)
+ if (file.is_open())
+ {
+  file << score << endl;
+  file.close();
+ }
+}
+
+void showScores()
+{
+ ifstream file("score.txt");
+ if (file.is_open())
+ {
+  cout << "\n===== RECORD SCORE =====\n";
+  int s;
+  int index = 1;
+  while (file >> s)
+  {
+   cout << index << ". " << s << endl;
+   index++;
+  }
+  file.close();
+ }
+ else
+ {
+  cout << "Bermain terlebih dahulu!." << endl;
+ }
 }
 
 void fruitSpawn()
@@ -277,12 +309,13 @@ menu:
    // clearNode();
    Sleep(80);
   }
+  saveScore(score);
   cout << "Game Over" << endl;
   system("pause");
   goto menu;
   break;
  case '2':
-  cout << "menu record!" << endl;
+  showScores();
   system("pause");
   goto menu;
   break;
