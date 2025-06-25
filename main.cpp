@@ -50,6 +50,42 @@ bool isFull()
  return queue.tail == SIZE ? true : false;
 }
 
+void SearchScore(int input)
+{
+ if (!isEmpty())
+ {
+  for (int i = queue.head; i < queue.tail; i++)
+  {
+   if (queue.score[i] == input)
+   {
+    if (queue.score[i] > 100)
+    {
+     cout << "Wah hebat!" << endl;
+     cout << "Your Score : " << queue.score[i] << endl;
+     return;
+    }
+    else if (queue.score[i] >= 50)
+    {
+     cout << "Bolehlah!" << endl;
+     cout << "Your Score : " << queue.score[i] << endl;
+     return;
+    }
+    else
+    {
+     cout << "Noob!" << endl;
+     cout << "Your Score : " << queue.score[i] << endl;
+     return;
+    }
+   }
+  }
+  cout << "Score tidak ditemukan!" << endl;
+ }
+ else
+ {
+  cout << "Yuk! Mulai cetak score terbaikmu" << endl;
+ }
+}
+
 void enQueue(int input)
 {
  if (!isFull())
@@ -344,13 +380,15 @@ int main()
  char choose;
  loadScores();
 menu:
+ system("cls");
  cout << "=============================" << endl;
  cout << "||       Snake Game        ||" << endl;
  cout << "=============================" << endl;
 
  cout << "\n1. Play Game" << endl;
  cout << "2. Score" << endl;
- cout << "3. Exit" << endl;
+ cout << "3. Search Score" << endl;
+ cout << "4. Exit" << endl;
 
  cout << "\nYour choose [1..3] : ";
  cin >> choose;
@@ -384,6 +422,17 @@ menu:
   goto menu;
   break;
  case '3':
+  int input;
+  system("cls");
+  cout << "Search Score" << endl;
+  cout << "______________" << endl;
+  cout << "Input Score: ";
+  cin >> input;
+  SearchScore(input);
+  system("pause");
+  goto menu;
+  break;
+ case '4':
   sortDescending();
   saveScore();
   break;
