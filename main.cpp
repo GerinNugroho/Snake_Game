@@ -1,9 +1,10 @@
 #include <iostream>
 #include <stdlib.h>
 #include <windows.h>
-#include <unistd.h>
-#include <conio.h>
 #include <fstream>
+#include <conio.h>
+#include <string>
+#define SIZE 10
 using namespace std;
 
 int width, height, score;
@@ -23,43 +24,102 @@ struct BodySnake
 
 BodySnake *tail = NULL;
 
-void hideCursor()
+struct Queue
+{
+ int score[SIZE];
+ int head = 0;
+ int tail = 0;
+} queue;
+
+void showCursor(bool status)
 {
  HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
  CONSOLE_CURSOR_INFO cursorInfo;
  GetConsoleCursorInfo(consoleHandle, &cursorInfo);
- cursorInfo.bVisible = false;
+ cursorInfo.bVisible = status;
  SetConsoleCursorInfo(consoleHandle, &cursorInfo);
 }
 
-void saveScore(int score)
+bool isEmpty()
 {
- ofstream file("score.txt", ios::app); // simpan ke file (append)
- if (file.is_open())
+ return queue.tail < 1 ? true : false;
+}
+
+bool isFull()
+{
+ return queue.tail == SIZE ? true : false;
+}
+
+void enQueue(int input)
+{
+ if (!isFull())
  {
-  file << score << endl;
-  file.close();
+  queue.score[queue.tail] = input;
+  queue.tail++;
+ }
+ else
+ {
+  cout << "Penyimpanan sudah full!" << endl;
  }
 }
 
-void showScores()
+void saveScore()
+{
+ ofstream file("score.txt");
+ if (file.is_open() && !isEmpty())
+ {
+  string buffer;
+  for (int i = queue.head; i < queue.tail; i++)
+  {
+   buffer += to_string(queue.score[i]) + "\n";
+  }
+  file << buffer;
+ }
+}
+
+void loadScores()
 {
  ifstream file("score.txt");
  if (file.is_open())
  {
-  cout << "\n===== RECORD SCORE =====\n";
-  int s;
-  int index = 1;
-  while (file >> s)
+  string myData;
+  while (getline(file, myData))
   {
-   cout << index << ". " << s << endl;
-   index++;
+   enQueue(stoi(myData));
   }
   file.close();
  }
+}
+
+void sortDescending()
+{
+ for (int i = 1; i < 10; i++)
+ {
+  int tmp = queue.score[i];
+  int insert_index = i;
+  int j = i - 1;
+  while (j >= 0 && tmp > queue.score[j])
+  {
+   queue.score[j + 1] = queue.score[j];
+   insert_index = j;
+   j--;
+  }
+  queue.score[insert_index] = tmp;
+ }
+}
+
+void printQueue()
+{
+ if (!isEmpty())
+ {
+  for (int i = queue.head; i < queue.tail; i++)
+  {
+   cout << i + 1 << ". " << queue.score[i] << endl;
+  }
+ }
  else
  {
-  cout << "Bermain terlebih dahulu!." << endl;
+  cout << "Ayo! cetak score terbaikmu" << endl;
  }
 }
 
@@ -101,7 +161,6 @@ void clearNode()
  int index = 1;
  while (temp != NULL)
  {
-  // cout << "Node" << index << ": " << "X : " << temp->X << "Y : " << temp->Y << "Next : " << temp->next << endl;
   deleteNode = temp;
   temp = temp->next;
   delete deleteNode;
@@ -134,7 +193,7 @@ void setup()
  score = 0;
  dir = ' ';
  clearNode();
- // hideCursor();
+ showCursor(false);
 }
 void draw()
 {
@@ -283,6 +342,7 @@ int main()
 {
  bool game;
  char choose;
+ loadScores();
 menu:
  cout << "=============================" << endl;
  cout << "||       Snake Game        ||" << endl;
@@ -298,7 +358,6 @@ menu:
  {
  case '1':
   game = true;
-  ShowCursor(false);
   setup();
   while (game)
   {
@@ -306,20 +365,27 @@ menu:
    cout << endl;
    control();
    logic(&game);
-   // clearNode();
    Sleep(80);
   }
-  saveScore(score);
+  enQueue(score);
+  showCursor(true);
   cout << "Game Over" << endl;
   system("pause");
   goto menu;
   break;
  case '2':
-  showScores();
+  system("cls");
+  cout << "Your Score" << endl;
+  cout << "_____________" << endl;
+  sortDescending();
+  printQueue();
   system("pause");
+  system("cls");
   goto menu;
   break;
  case '3':
+  sortDescending();
+  saveScore();
   break;
  default:
   cout << "Pilihan tidak tersedia!" << endl;
